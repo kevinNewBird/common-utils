@@ -22,11 +22,11 @@ import java.util.stream.IntStream;
  * create by: zhaosong 2023/9/20
  * version: 1.0
  */
-public class AESUtils {
+public final class AESCBCUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(AESUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(AESCBCUtils.class);
 
-    private AESUtils() {
+    private AESCBCUtils() {
     }
 
     private static final String PRI_KEY = "Va[st71I.YB4]OH<";
