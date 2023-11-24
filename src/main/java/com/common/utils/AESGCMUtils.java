@@ -41,7 +41,7 @@ public final class AESGCMUtils {
 
     private static final int GCM_IV_LENGTH = 12;
 
-    private static final int GCM_TAG_LENGTH = 16;
+    private static final int GCM_TAG_LENGTH = 128;
 
 
     private AESGCMUtils() {
@@ -71,7 +71,7 @@ public final class AESGCMUtils {
             random.nextBytes(iv);
 
             SecretKeySpec keySpec = new SecretKeySpec(secretKey, KEY_ALGORITHM);
-            GCMParameterSpec ivSpec = new GCMParameterSpec(128, iv);
+            GCMParameterSpec ivSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
@@ -95,7 +95,7 @@ public final class AESGCMUtils {
             byte[] iv = Arrays.copyOfRange(encrypted, 0, GCM_IV_LENGTH);
             byte[] secretKey = Arrays.copyOfRange(encrypted, GCM_IV_LENGTH, 44);
             SecretKeySpec keySpec = new SecretKeySpec(secretKey, KEY_ALGORITHM);
-            GCMParameterSpec ivSpec = new GCMParameterSpec(128, iv);
+            GCMParameterSpec ivSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
 
             Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
