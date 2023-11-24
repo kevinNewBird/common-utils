@@ -14,7 +14,9 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * description: com.common.utils
@@ -110,7 +112,7 @@ public final class AESCBCUtils {
         return Base64.getEncoder().encodeToString(src);
     }
 
-    public static void main(String[] args) {
+    private static void test(){
         String encrypt = encrypt("Vbase@1234");
         System.out.println("加密：" + encrypt);
         System.out.println("解密：" + decrypt(encrypt));
@@ -119,7 +121,13 @@ public final class AESCBCUtils {
         String encryptHutool = aes.encryptBase64("helloworld");
         System.out.println("hutool加密：" + encryptHutool);
         System.out.println("hutool解密：" + aes.decryptStr(encryptHutool));
+    }
 
+    public static void main(String[] args) {
+
+//        test();
+
+        Stream.of("root","vastbase","tom").filter(user->!"root".equals(user)).collect(Collectors.toList()).forEach(System.out::println);
     }
 
 }

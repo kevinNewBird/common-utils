@@ -26,21 +26,30 @@ public final class AESGCMUtils {
     //java没有按照常规方式转为base64是因为编码发现 上述base64后，java和js不一致，js的base64相当于java这么处理之后:
     //       Base64.getEncoder().encodeToString(new String(encryptData).getBytes());
 
+    // 前后端方案：https://www.cnblogs.com/shenjp/p/16423487.html
+
+    // https://juejin.cn/post/6844903540440186888
+
 
     private static final Logger logger = LoggerFactory.getLogger(AESGCMUtils.class);
 
     private static final String KEY_ALGORITHM = "AES";
 
-    private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding";
+    private static final String CIPHER_ALGORITHM = "AES/GCM/PKCS5Padding";
 
-    //    private static final String PRI_KEY = "Va[st71I.YB4]OH<";
+    private static final int AES_KEY_SIZE = 256;
+
+    private static final int GCM_IV_LENGTH = 12;
+
+    private static final int GCM_TAG_LENGTH = 16;
+
 
     private AESGCMUtils() {
     }
 
     private static byte[] generateSecret() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM);
-        keyGenerator.init(256);
+        keyGenerator.init(AES_KEY_SIZE);
 
         SecretKey key = keyGenerator.generateKey();
         return key.getEncoded();
@@ -57,7 +66,7 @@ public final class AESGCMUtils {
     private static byte[] aesGCMEncrypt(String content) throws Exception {
         try {
             byte[] secretKey = generateSecret();
-            byte[] iv = new byte[12];
+            byte[] iv = new byte[GCM_IV_LENGTH];
             SecureRandom random = new SecureRandom();
             random.nextBytes(iv);
 
@@ -83,8 +92,8 @@ public final class AESGCMUtils {
     private static byte[] aesGCMDecrypt(String content) throws Exception {
         try {
             byte[] encrypted = Base64.getDecoder().decode(content);
-            byte[] iv = Arrays.copyOfRange(encrypted, 0, 12);
-            byte[] secretKey = Arrays.copyOfRange(encrypted, 12, 44);
+            byte[] iv = Arrays.copyOfRange(encrypted, 0, GCM_IV_LENGTH);
+            byte[] secretKey = Arrays.copyOfRange(encrypted, GCM_IV_LENGTH, 44);
             SecretKeySpec keySpec = new SecretKeySpec(secretKey, KEY_ALGORITHM);
             GCMParameterSpec ivSpec = new GCMParameterSpec(128, iv);
 
