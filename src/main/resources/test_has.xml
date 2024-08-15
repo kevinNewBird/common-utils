@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HAS xmlns="http://www.vastdata.org/schema/has"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.vastdata.org/schema/has http://www.vastdata.org/schema/cm/vastbase-has.xsd"
+    treeName="has_installer" version="1.2">
+    <install></install>
+</HAS>

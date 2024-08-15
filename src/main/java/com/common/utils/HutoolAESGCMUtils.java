@@ -1,12 +1,16 @@
 package com.common.utils;
 
 
+import cn.hutool.crypto.KeyUtil;
+import cn.hutool.crypto.asymmetric.AsymmetricAlgorithm;
+import cn.hutool.crypto.asymmetric.AsymmetricCrypto;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.KeyGenerator;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -38,21 +42,23 @@ public class HutoolAESGCMUtils {
             KeyPair keyPair = gen.generateKeyPair();
             PrivateKey priKey = keyPair.getPrivate();
             PublicKey pubKey = keyPair.getPublic();
+            System.out.println("pri:" + priKey.getEncoded().length + ", pub:" + pubKey.getEncoded().length);
             privateKey = Base64.encodeBase64String(priKey.getEncoded());
             publicKey = Base64.encodeBase64String(pubKey.getEncoded());
+
         } catch (Exception ex) {
             logger.error("gen key pair fail!", ex);
         }
     }
 
     public static String encrypt(String plainText) {
-        RSA rsa = new RSA((String) null, publicKey);
+        RSA rsa = new RSA("RSA", (String) null, publicKey);
         byte[] encrypt = rsa.encrypt(plainText.getBytes(StandardCharsets.UTF_8), KeyType.PublicKey);
         return new String(Base64.encodeBase64(encrypt), StandardCharsets.UTF_8);
     }
 
     public static String decrypt(String cipherText) {
-        RSA rsa = new RSA(privateKey, (String) null);
+        RSA rsa = new RSA("RSA", privateKey, (String) null);
         byte[] decrypt = rsa.decrypt(Base64.decodeBase64(cipherText), KeyType.PrivateKey);
         return new String(decrypt, StandardCharsets.UTF_8);
     }
@@ -61,5 +67,9 @@ public class HutoolAESGCMUtils {
         String encrypt = encrypt("Vbase@1234");
         System.out.println(encrypt);
         System.out.println(decrypt(encrypt));
+
+
+        System.out.println("私钥：" + privateKey);
+        System.out.println("公钥：" + publicKey);
     }
 }

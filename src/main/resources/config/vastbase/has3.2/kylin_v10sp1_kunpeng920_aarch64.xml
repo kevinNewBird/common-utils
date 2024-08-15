@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CM_NEW xmlns="http://www.vastdata.org/schema/cm_new"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.vastdata.org/schema/cm_new http://www.vastdata.org/schema/cm_new/vastbase-cm_new.xsd"
+>
+
+    <!---->
+    <install node_type="selector">
+        <server-conf key_name="SERVER_CONF" node_type="sequence">
+            <!--对应实例对象serverConf-->
+            <web-ui-leaf node_type="condition" deploy_type="default">
+                <bean class="com.common.behavior.simple.LeafNode">
+                    <property name="host" data_type="java.lang.String" ui_mode="input" required="true" pattern="*sss*">
+                        <validation class=""/>
+                    </property>
+                    <property name="device" data_type="java.lang.String" ui_mode="input" required="false" deploy_type="cluster">
+                        <validation class=""/>
+                    </property>
+
+                    <property name="" data_type="java.util.List" ui_mode="" required="">
+                        <validation class="java.util.List"/>
+                        <list>
+                            <bean class="java">
+                                <property name="" data_type="" ui_mode="" required=""/>
+                            </bean>
+                        </list>
+                    </property>
+                    
+                </bean>
+            </web-ui-leaf>
+            <check_connectivity node_type="selector">
+                <sss node_type="sequence">
+                    <check_param node_type="condition"></check_param>
+                    <action node_type="action"></action>
+                </sss>
+            </check_connectivity>
+        </server-conf>
+        <env-check>
+            <web-ui-leaf node_type="condition" deploy_type="default">
+                <!--增加list的逻辑-->
+            </web-ui-leaf>
+
+        </env-check>
+    </install>
+</CM_NEW>

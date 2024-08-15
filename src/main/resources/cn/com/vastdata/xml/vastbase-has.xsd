@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- xmlns:cm指定特定的命名空间-->
+<xsd:schema xmlns="http://www.vastdata.org/schema/has"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.vastdata.org/schema/has" elementFormDefault="qualified">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[test]]></xsd:documentation>
+    </xsd:annotation>
+
+    <!--    Top Level    -->
+    <xsd:element name="HAS">
+        <xsd:annotation>
+            <xsd:documentation>
+                ![CDATA[top]]
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                    <xsd:element ref="install"/>
+                    <xsd:element ref="uninstall"/>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="treeName" type="xsd:string" fixed="has_installer" use="required"/>
+            <xsd:attribute name="version" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!--  install tree  -->
+    <xsd:element name="install">
+
+    </xsd:element>
+    <!--  uninstall tree -->
+    <xsd:element name="uninstall">
+
+    </xsd:element>
+
+</xsd:schema>

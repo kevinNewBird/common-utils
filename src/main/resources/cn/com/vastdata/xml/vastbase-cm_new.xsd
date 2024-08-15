@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- xmlns:cm指定特定的命名空间-->
+<xs:schema xmlns="http://www.vastdata.org/schema/cm_new"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.vastdata.org/schema/cm_new" elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace"/>
+
+    <xs:annotation>
+        <xs:documentation><![CDATA[
+
+
+]]></xs:documentation>
+    </xs:annotation>
+
+    <!--    Top Level    -->
+    <xs:element name="CM_NEW">
+        <xs:annotation>
+            <xs:documentation>
+                ![CDATA[top]]
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="1" maxOccurs="unbounded">
+                    <xs:element ref="install" minOccurs="1" maxOccurs="1"/>
+                </xs:choice>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!--  install tree  -->
+    <xs:element name="install" default="selector">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="server-conf" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="env-check" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="preinstall" minOccurs="1" maxOccurs="1"/>
+                <xs:element ref="doinstall" minOccurs="1" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="node_type" type="selector" default="selector"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!--  uninstall tree -->
+    <xs:element name="uninstall">
+
+    </xs:element>
+
+
+    <xs:element name="server-conf" default="selector">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[1.服务器配置及检查]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="web-ui-leaf" minOccurs="1" default="condition">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:choice>
+                                <xs:element ref="bean"/>
+                            </xs:choice>
+                        </xs:sequence>
+                        <xs:attribute name="node_type" type="condition" default="condition"/>
+                        <xs:attribute name="deploy_type" type="deploy_type_value" default="default"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="check_connectivity" minOccurs="1" default="selector">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="requireNotEmpty" default="condition">
+                                <xs:complexType>
+                                    <xs:attribute name="node_type" type="condition"/>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="requireNonNull" type="condition">
+                                <xs:complexType>
+                                    <xs:attribute name="node_type" type="condition"  default="condition"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="node_type" type="selector"  default="selector"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="node_type" type="sequence" default="sequence"/>
+            <xs:attribute name="key_name" type="xs:string" default="SERVER_CONF"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="bean">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="identifiedType">
+                    <xs:group ref="inputElements"/>
+                    <xs:attributeGroup ref="inputAttributes"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:group name="inputElements">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="property"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+
+    <xs:attributeGroup name="inputAttributes">
+        <xs:attribute name="class" type="xs:string">
+            <xs:annotation>
+                <xs:documentation source="java:java.lang.Class">
+                    <![CDATA[参数的class类型]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+
+
+    <!-- base types -->
+    <xs:complexType name="identifiedType" abstract="true">
+        <xs:annotation>
+            <xs:documentation><![CDATA[
+	The unique identifier for a bean. The scope of the identifier
+	is the enclosing bean factory.
+			]]></xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="id" type="xs:string">
+            <xs:annotation>
+                <xs:documentation><![CDATA[
+	The unique identifier for a bean. A bean id may not be used more than once
+	within the same <beans> element.
+				]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:element name="property" type="propertyType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[输入参数的属性约束，用于控制前端展示]]>
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:complexType name="propertyType">
+        <xs:sequence>
+            <xs:element name="validation" minOccurs="1" maxOccurs="1">
+                <xs:complexType>
+                    <xs:attribute name="class" use="required"/>
+                </xs:complexType>
+            </xs:element>
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element ref="list"/>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="data_type" type="xs:string" use="required"/>
+        <xs:attribute name="deploy_type" type="deploy_type_value" default="default"/>
+        <xs:attribute name="ui_mode" type="ui_mode_type" use="required" default="input"/>
+        <xs:attribute name="required" type="xs:boolean" use="required" default="false"/>
+        <xs:attribute name="minInclusive" type="xs:long"/>
+        <xs:attribute name="maxInclusive" type="xs:long"/>
+        <xs:attribute name="pattern" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:simpleType name="ui_mode_type">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="input"/>  <!--输入框-->
+            <xs:enumeration value="select"/> <!--下拉框-->
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!--行为树的节点类型定义-->
+    <xs:simpleType name="selector">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="selector"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="sequence">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="sequence"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="condition">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="condition"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="action">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="action"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+
+    <xs:simpleType name="deploy_type_value">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="single"/>
+            <xs:enumeration value="cluster"/>
+            <xs:enumeration value="default"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="list">
+        <xs:annotation>
+            <xs:documentation><![CDATA[
+	A list can contain multiple inner bean, ref, collection, or value elements.
+	A list can also map to an array type; the necessary conversion is performed
+	automatically.
+			]]></xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="listOrSetType">
+                    <xs:attribute name="merge" default="default" type="defaultable-boolean">
+                        <xs:annotation>
+                            <xs:documentation><![CDATA[
+	Enables/disables merging for collections when using parent/child beans.
+							]]></xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+
+    <!-- 'list' and 'set' collection type -->
+    <xs:complexType name="listOrSetType">
+        <xs:complexContent>
+            <xs:extension base="collectionType">
+                <xs:group ref="collectionElements"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- base type for collections that have (possibly) typed nested values -->
+    <xs:complexType name="collectionType">
+        <xs:attribute name="value-type" type="xs:string">
+            <xs:annotation>
+                <xs:documentation source="java:java.lang.Class"><![CDATA[
+	The default Java type for nested values. Must be a fully qualified
+	class name.
+				]]></xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <!-- Collection Elements -->
+    <xs:group name="collectionElements">
+        <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="bean"/>
+                <xs:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:group>
+
+</xs:schema>

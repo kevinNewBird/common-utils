@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- xmlns:cm指定特定的命名空间-->
+<xsd:schema xmlns="http://www.vastdata.org/schema/cm"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.vastdata.org/schema/cm" elementFormDefault="qualified">
+
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+
+
+]]></xsd:documentation>
+    </xsd:annotation>
+
+    <!--    Top Level    -->
+    <xsd:element name="CM">
+        <xsd:annotation>
+            <xsd:documentation>
+                ![CDATA[top]]
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="1" maxOccurs="unbounded">
+                    <xsd:element ref="install" minOccurs="1" maxOccurs="1"/>
+                    <xsd:element ref="uninstall" minOccurs="0" maxOccurs="1"/>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="treeName" type="xsd:string" fixed="cm_installer" use="required"/>
+            <xsd:attribute name="version" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!--  install tree  -->
+    <xsd:element name="install">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="build" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element ref="selector" maxOccurs="1"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <!--  uninstall tree -->
+    <xsd:element name="uninstall">
+
+    </xsd:element>
+
+
+
+
+    <!-- 行为树子树的选择器 -->
+    <xsd:element name="selector">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice maxOccurs="2">
+                    <xsd:element ref="control"/>
+                    <xsd:element ref="action"/>
+                </xsd:choice>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- 行为子树的顺序控制器 -->
+    <xsd:element name="control">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="condition"/>
+                <xsd:choice>
+                    <xsd:element ref="selector"/>
+                    <xsd:element ref="action"/>
+                </xsd:choice>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <!-- 行为树的条件判断执行器 -->
+    <xsd:element name="condition">
+        <xsd:complexType>
+            <!-- 用于初始化条件判断执行器 -->
+            <xsd:attribute name="classType" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- 行为树的动作执行器 -->
+    <xsd:element name="action">
+        <xsd:complexType>
+            <!-- 用于初始化动作执行器 -->
+            <xsd:attribute name="classType" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- 定义复杂类型 -->
+<!--    <xsd:complexType name="ServerType">-->
+<!--        <xsd:annotation>-->
+<!--            <xsd:documentation><![CDATA[the server machine‘s connection information!]]></xsd:documentation>-->
+<!--        </xsd:annotation>-->
+<!--        <xsd:all>-->
+<!--            <xsd:element name="host" type="xsd:string"/>-->
+<!--            <xsd:element name="ftpPort" type="portType"/>-->
+<!--            <xsd:element name="username" type="xsd:string"/>-->
+<!--            <xsd:element name="password" type="xsd:string"/>-->
+<!--        </xsd:all>-->
+<!--    </xsd:complexType>-->
+
+<!--    <xsd:simpleType name="portType">-->
+<!--        <xsd:restriction base="xsd:int">-->
+<!--            <xsd:minInclusive value="1"/>-->
+<!--            <xsd:maxInclusive value="65535"/>-->
+<!--        </xsd:restriction>-->
+<!--    </xsd:simpleType>-->
+
+</xsd:schema>

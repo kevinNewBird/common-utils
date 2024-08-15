@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sss xmlns="http://www.vastdata.org/schema/test1"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:a="http://www.vastdata.org/schema/cm_new"
+       xsi:schemaLocation="http://www.vastdata.org/schema/test1  http://www.vastdata.org/schema/test1/test1.xsd
+">
+
+    <a:install>
+        <a:server-conf>
+            <a:web-ui-leaf>
+                <a:bean></a:bean>
+            </a:web-ui-leaf>
+            <a:check_connectivity>
+                <a:requireNotEmpty/>
+                <a:requireNonNull/>
+            </a:check_connectivity>
+        </a:server-conf>
+    </a:install>
+
+</sss>

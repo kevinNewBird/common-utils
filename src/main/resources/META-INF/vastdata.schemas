@@ -1,0 +1,4 @@
+http\://www.vastdata.org/schema/cm/vastbase-cm.xsd=cn/com/vastdata/xml/vastbase-cm.xsd
+http\://www.vastdata.org/schema/cm/vastbase-cm_new.xsd=cn/com/vastdata/xml/vastbase-cm_new.xsd
+http\://www.vastdata.org/schema/has/vastbase-has.xsd=cn/com/vastdata/xml/vastbase-has.xsd
+http\://www.vastdata.org/schema/has/test1.xsd=cn/com/vastdata/xml/test1.xsd

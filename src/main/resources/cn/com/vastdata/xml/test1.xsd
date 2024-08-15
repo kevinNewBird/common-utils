@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- xmlns:cm指定特定的命名空间-->
+<xsd:schema xmlns="http://www.vastdata.org/schema/test1"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:a="http://www.vastdata.org/schema/cm_new"   targetNamespace="http://www.vastdata.org/schema/test1" elementFormDefault="qualified">
+
+    <xsd:import namespace="http://www.vastdata.org/schema/cm_new" schemaLocation="vastbase-cm_new.xsd"/>
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+
+
+]]></xsd:documentation>
+    </xsd:annotation>
+
+    <xsd:import namespace="http://www.vastdata.org/schema/cm_new" schemaLocation="classpath:/vastbase-cm_new.xsd"/>
+
+    <xsd:element name="sss">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="a:install"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>
