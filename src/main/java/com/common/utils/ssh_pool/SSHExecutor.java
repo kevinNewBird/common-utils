@@ -5,6 +5,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.util.io.IoUtils;
+import org.apache.sshd.scp.client.CloseableScpClient;
+import org.apache.sshd.scp.client.ScpClient;
+import org.apache.sshd.scp.client.ScpClientCreator;
+import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClientFactory;
 import org.apache.sshd.sftp.client.fs.SftpFileSystem;
@@ -74,10 +78,8 @@ public class SSHExecutor {
             long start = System.currentTimeMillis();
             StringBuilder ret = new StringBuilder();
             while (true) {
-                if (config.getExecTimeout() > 0
-                        && System.currentTimeMillis() - start > config.getExecTimeout()) {
-                    throw new SSHException(MessageFormat.format("执行ssh命令超时，超时配置为{0}ms"
-                            , config.getExecTimeout()));
+                if (config.getExecTimeout() > 0 && System.currentTimeMillis() - start > config.getExecTimeout()) {
+                    throw new SSHException(MessageFormat.format("执行ssh命令超时，超时配置为{0}ms", config.getExecTimeout()));
                 }
                 while (is.available() > 0) {
                     len = is.read(cache, 0, 1024);
@@ -123,8 +125,7 @@ public class SSHExecutor {
     }
 
     private static void doAutoResponse(OutputStream os, Map<String, String> autoResponse, StringBuilder ret) {
-        if (Objects.nonNull(autoResponse)
-                && StringUtils.isNotBlank(ret.toString().trim())) {
+        if (Objects.nonNull(autoResponse) && StringUtils.isNotBlank(ret.toString().trim())) {
             for (Map.Entry<String, String> linePair : autoResponse.entrySet()) {
                 String flag = linePair.getKey();
                 String pairResp = linePair.getValue();
@@ -231,4 +232,50 @@ public class SSHExecutor {
         }
 
     }
+
+
+    /**
+     * 上传本地目录到远程
+     * description:
+     * create by: zhaosong 2024/8/22 16:50
+     *
+     * @param config
+     * @param sourceDir
+     * @param remoteDir
+     * @return
+     */
+    public static SSHResult uploadDirToRemote(SSHConfig config, String sourceDir, String remoteDir) {
+        try (ClientSession session = SSHPool.getInstance().borrowObject(config);
+             CloseableScpClient client = CloseableScpClient.singleSessionInstance(ScpClientCreator.instance().createScpClient(session))) {
+
+            client.upload(Paths.get(sourceDir), remoteDir, ScpClient.Option.TargetIsDirectory);
+            return new SSHResult.SSHResultHolder().code(0).message("上传成功！").build();
+        } catch (Throwable ex) {
+            logger.error(MessageFormat.format("上传{0}目录下所有文件失败！", sourceDir), ex);
+            return new SSHResult.SSHResultHolder().code(-1).message(ex.getMessage()).build();
+        }
+    }
+
+    /**
+     * 下载远程目录到本地
+     * description:
+     * create by: zhaosong 2024/8/22 16:49
+     *
+     * @param config
+     * @param remoteDir
+     * @param localDir
+     * @return
+     */
+    public static SSHResult downloadDirToRemote(SSHConfig config, String remoteDir, String localDir) {
+        try (ClientSession session = SSHPool.getInstance().borrowObject(config);
+             CloseableScpClient client = CloseableScpClient.singleSessionInstance(ScpClientCreator.instance().createScpClient(session))) {
+
+            client.download(remoteDir, localDir, ScpClient.Option.TargetIsDirectory);
+            return new SSHResult.SSHResultHolder().code(0).message("下载成功！").build();
+        } catch (Throwable ex) {
+            logger.error(MessageFormat.format("下载{0}目录下所有文件失败！", remoteDir), ex);
+            return new SSHResult.SSHResultHolder().code(-1).message(ex.getMessage()).build();
+        }
+    }
+
 }
