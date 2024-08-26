@@ -8,6 +8,7 @@ import org.apache.sshd.common.util.io.IoUtils;
 import org.apache.sshd.scp.client.CloseableScpClient;
 import org.apache.sshd.scp.client.ScpClient;
 import org.apache.sshd.scp.client.ScpClientCreator;
+import org.apache.sshd.scp.client.ScpRemote2RemoteTransferHelper;
 import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClientFactory;
@@ -274,6 +275,29 @@ public class SSHExecutor {
             return new SSHResult.SSHResultHolder().code(0).message("下载成功！").build();
         } catch (Throwable ex) {
             logger.error(MessageFormat.format("下载{0}目录下所有文件失败！", remoteDir), ex);
+            return new SSHResult.SSHResultHolder().code(-1).message(ex.getMessage()).build();
+        }
+    }
+
+    /**
+     * 模拟scp两个远程连接数据互传
+     * description:
+     * create by: zhaosong 2024/8/22 18:14
+     *
+     * @param srcConfig
+     * @param srcRemoteDir
+     * @param targetRemoteDir
+     * @return
+     */
+    public static SSHResult scpRemote2Remote(SSHConfig srcConfig, SSHConfig targetConfig, String srcRemoteDir, String targetRemoteDir) {
+        try (ClientSession srcSession = SSHPool.getInstance().borrowObject(srcConfig);
+             ClientSession targetSession = SSHPool.getInstance().borrowObject(targetConfig)) {
+
+            ScpRemote2RemoteTransferHelper channel = new ScpRemote2RemoteTransferHelper(srcSession, targetSession);
+            channel.transferDirectory(srcRemoteDir, targetRemoteDir, false);
+            return new SSHResult.SSHResultHolder().code(0).message("下载成功！").build();
+        } catch (Throwable ex) {
+            logger.error(MessageFormat.format("下载{0}目录下所有文件失败！", srcRemoteDir), ex);
             return new SSHResult.SSHResultHolder().code(-1).message(ex.getMessage()).build();
         }
     }
