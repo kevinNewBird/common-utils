@@ -236,7 +236,7 @@ public class SSHExecutor {
 
 
     /**
-     * 上传本地目录到远程
+     * 上传本地目录到远程（缺点：会抹除软连接等，只保留文件）
      * description:
      * create by: zhaosong 2024/8/22 16:50
      *
@@ -258,7 +258,7 @@ public class SSHExecutor {
     }
 
     /**
-     * 下载远程目录到本地
+     * 下载远程目录到本地（缺点：会抹除软连接等，只保留文件）
      * description:
      * create by: zhaosong 2024/8/22 16:49
      *
@@ -280,7 +280,7 @@ public class SSHExecutor {
     }
 
     /**
-     * 模拟scp两个远程连接数据互传
+     * 模拟scp两个远程连接数据互传（缺点：会抹除软连接等，只保留文件）
      * description:
      * create by: zhaosong 2024/8/22 18:14
      *

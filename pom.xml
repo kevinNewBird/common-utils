@@ -89,6 +89,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.27.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.logging.demo</groupId>
             <artifactId>common-logging-demo</artifactId>
             <version>1.0</version>
