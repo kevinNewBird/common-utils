@@ -4,11 +4,14 @@ import com.common.exceptions.SSHException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sshd.client.channel.ChannelExec;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.session.Session;
 import org.apache.sshd.common.util.io.IoUtils;
 import org.apache.sshd.scp.client.CloseableScpClient;
 import org.apache.sshd.scp.client.ScpClient;
 import org.apache.sshd.scp.client.ScpClientCreator;
 import org.apache.sshd.scp.client.ScpRemote2RemoteTransferHelper;
+import org.apache.sshd.scp.common.ScpTransferEventListener;
+import org.apache.sshd.scp.common.helpers.ScpAckInfo;
 import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClientFactory;
@@ -20,10 +23,13 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -236,7 +242,8 @@ public class SSHExecutor {
 
 
     /**
-     * 上传本地目录到远程（缺点：会抹除软连接等，只保留文件）
+     * 上传本地目录到远程（缺点：会抹除软连接，只保留文件）
+     * TIP: scp原生命令也是无法保留软连接的
      * description:
      * create by: zhaosong 2024/8/22 16:50
      *
@@ -246,10 +253,13 @@ public class SSHExecutor {
      * @return
      */
     public static SSHResult uploadDirToRemote(SSHConfig config, String sourceDir, String remoteDir) {
+
+        // TIP: scp原生命令也是无法保留软连接的
         try (ClientSession session = SSHPool.getInstance().borrowObject(config);
              CloseableScpClient client = CloseableScpClient.singleSessionInstance(ScpClientCreator.instance().createScpClient(session))) {
 
-            client.upload(Paths.get(sourceDir), remoteDir, ScpClient.Option.TargetIsDirectory);
+            client.upload(Paths.get(sourceDir), remoteDir, ScpClient.Option.TargetIsDirectory
+                    , ScpClient.Option.Recursive, ScpClient.Option.PreserveAttributes);
             return new SSHResult.SSHResultHolder().code(0).message("上传成功！").build();
         } catch (Throwable ex) {
             logger.error(MessageFormat.format("上传{0}目录下所有文件失败！", sourceDir), ex);
@@ -271,7 +281,8 @@ public class SSHExecutor {
         try (ClientSession session = SSHPool.getInstance().borrowObject(config);
              CloseableScpClient client = CloseableScpClient.singleSessionInstance(ScpClientCreator.instance().createScpClient(session))) {
 
-            client.download(remoteDir, localDir, ScpClient.Option.TargetIsDirectory);
+            client.download(remoteDir, localDir, ScpClient.Option.TargetIsDirectory
+                    , ScpClient.Option.Recursive, ScpClient.Option.PreserveAttributes);
             return new SSHResult.SSHResultHolder().code(0).message("下载成功！").build();
         } catch (Throwable ex) {
             logger.error(MessageFormat.format("下载{0}目录下所有文件失败！", remoteDir), ex);

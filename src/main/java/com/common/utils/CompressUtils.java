@@ -1,5 +1,7 @@
 package com.common.utils;
 
+import com.common.utils.ssh_pool.SSHConfig;
+import com.common.utils.ssh_pool.SSHExecutor;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
@@ -10,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.function.Predicate;
 
@@ -27,24 +31,24 @@ public final class CompressUtils {
     }
 
     public static void main(String[] args) throws IOException {
-        decompressAllByTar("D:\\work-test\\test.tar.gz", "D:\\work-test\\output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
+//        decompressAllByTar("D:\\work-test\\test.tar.gz", "D:\\work-test\\output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
+        // 解压文件，然后分发到远程
+        decompressAllByTar("/root/test.tar.gz", "/root/output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
+
+        SSHConfig sshConfig = new SSHConfig();
+//        sshConfig.setHost("127.0.0.1");
+        sshConfig.setHost("10.0.2.54");
+        sshConfig.setFtpPort(22);
+        sshConfig.setUsername("root");
+        sshConfig.setPassword("trsadmin123");
+//        SSHExecutor.uploadDirToRemote(sshConfig, "D:\\work-test\\output\\test", "/root");
+        // TIP: scp原生命令也是无法保留软连接的（无法保留软连接）
+        SSHExecutor.uploadDirToRemote(sshConfig, "/root/output/test", "/root");
     }
 
 
     public static void decompressAllByTar(String srcTarFile, String targetDir) throws IOException {
-        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))) {
-            throw new RuntimeException(MessageFormat.format("The compress file [{0}] is empty string or not exists!", srcTarFile));
-        }
-        String tmpSrcFile = srcTarFile.toLowerCase();
-        if (StringUtils.endsWithAny(tmpSrcFile, ".tar.gz", "tgz")) {
-            decompressByTGZ(srcTarFile, targetDir, null);
-        } else if (StringUtils.endsWithAny(tmpSrcFile, ".tar.bz2")) {
-            decompressByTarBZ(srcTarFile, targetDir, null);
-        } else if (StringUtils.endsWithAny(tmpSrcFile, ".tar")) {
-            decompressByTar(srcTarFile, targetDir, null);
-        } else {
-            throw new RuntimeException("Unsupported Compressed file type!");
-        }
+        decompressAllByTar(srcTarFile, targetDir, null);
     }
 
     /**
@@ -147,14 +151,23 @@ public final class CompressUtils {
                 if (!targetFile.isDirectory() && !targetFile.mkdirs()) {
                     System.out.println("....");
                 }
+            } else if (entry.isSymbolicLink()) {
+                // 先删除已存在的软连接
+                Files.deleteIfExists(targetFile.toPath());
+                // 创建软连接
+                File realFile = new File(entry.getLinkName());
+                Files.createSymbolicLink(targetFile.toPath(), realFile.toPath());
             } else {
                 File parentFile = targetFile.getParentFile();
                 if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
                     System.out.println("....");
                 }
+                System.out.println(entry.getMode() + " === " + getFilePermissionsString(entry.getMode()));
                 try (OutputStream os = Files.newOutputStream(targetFile.toPath())) {
                     IOUtils.copy(tis, os);
                 }
+                Files.setPosixFilePermissions(targetFile.toPath()
+                        , PosixFilePermissions.fromString(getFilePermissionsString(entry.getMode())));
                 if (condition != null && condition.test(targetFile)) {
                     decompressAllByTar(targetFile.getAbsolutePath(), targetFile.getParent());
                 }
@@ -162,4 +175,54 @@ public final class CompressUtils {
         }
     }
 
+    private static String getFilePermissionsString(int unixMode) {
+        // 构建文件权限字符串，例如 "rwxr-xr-x"
+        StringBuilder permissionsBuilder = new StringBuilder();
+        if ((unixMode & 0400) != 0) {
+            permissionsBuilder.append('r');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0200) != 0) {
+            permissionsBuilder.append('w');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0100) != 0) {
+            permissionsBuilder.append('x');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0040) != 0) {
+            permissionsBuilder.append('r');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0020) != 0) {
+            permissionsBuilder.append('w');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0010) != 0) {
+            permissionsBuilder.append('x');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0004) != 0) {
+            permissionsBuilder.append('r');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0002) != 0) {
+            permissionsBuilder.append('w');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        if ((unixMode & 0001) != 0) {
+            permissionsBuilder.append('x');
+        } else {
+            permissionsBuilder.append('-');
+        }
+        return permissionsBuilder.toString();
+    }
 }
