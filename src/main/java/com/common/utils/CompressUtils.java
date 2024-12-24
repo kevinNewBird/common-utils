@@ -9,11 +9,13 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.rmi.RemoteException;
 import java.text.MessageFormat;
 import java.util.function.Predicate;
 
@@ -31,10 +33,16 @@ public final class CompressUtils {
     }
 
     public static void main(String[] args) throws IOException {
-//        decompressAllByTar("D:\\work-test\\test.tar.gz", "D:\\work-test\\output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
+        decompressAllByTar("D:\\work-test\\test.tar.gz", "D:\\work-test\\output"
+                , innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
         // 解压文件，然后分发到远程
-        decompressAllByTar("/root/test.tar.gz", "/root/output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
+//        decompressAllByTar("/root/test.tar.gz", "/root/output", innerFile -> innerFile != null && innerFile.getName().toLowerCase().startsWith("python36") && innerFile.getName().toLowerCase().endsWith("tar.gz"));
 
+        // 上传到远程目录
+//        uploadToRemote();
+    }
+
+    private static void uploadToRemote() {
         SSHConfig sshConfig = new SSHConfig();
 //        sshConfig.setHost("127.0.0.1");
         sshConfig.setHost("10.0.2.54");
@@ -162,12 +170,12 @@ public final class CompressUtils {
                 if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
                     System.out.println("....");
                 }
-                System.out.println(entry.getMode() + " === " + getFilePermissionsString(entry.getMode()));
+                System.out.println(entry.getMode() + " === " + parseFilePermissions(entry.getMode()));
                 try (OutputStream os = Files.newOutputStream(targetFile.toPath())) {
                     IOUtils.copy(tis, os);
                 }
                 Files.setPosixFilePermissions(targetFile.toPath()
-                        , PosixFilePermissions.fromString(getFilePermissionsString(entry.getMode())));
+                        , PosixFilePermissions.fromString(parseFilePermissions(entry.getMode())));
                 if (condition != null && condition.test(targetFile)) {
                     decompressAllByTar(targetFile.getAbsolutePath(), targetFile.getParent());
                 }
@@ -175,54 +183,55 @@ public final class CompressUtils {
         }
     }
 
-    private static String getFilePermissionsString(int unixMode) {
+    /**
+     * 解析权限
+     * description:
+     * create by: zhaosong 2024/12/24 19:02
+     *
+     * @param unixMode
+     * @return
+     */
+    private static String parseFilePermissions(int unixMode) {
         // 构建文件权限字符串，例如 "rwxr-xr-x"
         StringBuilder permissionsBuilder = new StringBuilder();
-        if ((unixMode & 0400) != 0) {
-            permissionsBuilder.append('r');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0200) != 0) {
-            permissionsBuilder.append('w');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0100) != 0) {
-            permissionsBuilder.append('x');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0040) != 0) {
-            permissionsBuilder.append('r');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0020) != 0) {
-            permissionsBuilder.append('w');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0010) != 0) {
-            permissionsBuilder.append('x');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0004) != 0) {
-            permissionsBuilder.append('r');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0002) != 0) {
-            permissionsBuilder.append('w');
-        } else {
-            permissionsBuilder.append('-');
-        }
-        if ((unixMode & 0001) != 0) {
-            permissionsBuilder.append('x');
-        } else {
-            permissionsBuilder.append('-');
-        }
+
+        permissionsBuilder
+                // 所属者权限
+                .append(parsePermission(unixMode, 0400, 0200, 0100))
+                // 所属组权限
+                .append(parsePermission(unixMode, 0040, 0020, 0010))
+                // 其它权限
+                .append(parsePermission(unixMode, 0004, 0002, 0001));
         return permissionsBuilder.toString();
+    }
+
+    /**
+     * description:解析各部分权限
+     * create by: zhaosong 2024/12/24 18:57
+     *
+     * @param unixMode: 权限
+     * @param read:     读权限
+     * @param write:    写权限
+     * @param other:    其它权限
+     * @return
+     */
+    private static String parsePermission(int unixMode, int read, int write, int other) {
+        StringBuilder partBuilder = new StringBuilder();
+        if ((unixMode & read) != 0) {
+            partBuilder.append('r');
+        } else {
+            partBuilder.append('-');
+        }
+        if ((unixMode & write) != 0) {
+            partBuilder.append('w');
+        } else {
+            partBuilder.append('-');
+        }
+        if ((unixMode & other) != 0) {
+            partBuilder.append('x');
+        } else {
+            partBuilder.append('-');
+        }
+        return partBuilder.toString();
     }
 }
