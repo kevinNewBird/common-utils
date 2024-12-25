@@ -29,6 +29,14 @@ import java.util.function.Predicate;
  */
 public final class CompressUtils {
 
+    private static final char R_AUTH = 'r';
+
+    private static final char W_AUTH = 'w';
+
+    private static final char X_AUTH = 'x';
+
+    private static final char NO_AUTH = '-';
+
     private CompressUtils() {
     }
 
@@ -65,7 +73,8 @@ public final class CompressUtils {
      * create by: zhaosong 2024/9/13 10:26
      */
     public static void decompressAllByTar(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
-        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))) {
+        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))
+                || !Files.isRegularFile(Paths.get(srcTarFile))) {
             throw new RuntimeException(MessageFormat.format("The compress file [{0}] is empty string or not exists!", srcTarFile));
         }
         String tmpSrcFile = srcTarFile.toLowerCase();
@@ -90,12 +99,10 @@ public final class CompressUtils {
      * @param targetDir
      * @throws IOException
      */
-    public static void decompressByTGZ(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
-        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))) {
-            throw new RuntimeException(MessageFormat.format("The compress file [{0}] is empty string or not exists!", srcTarFile));
-        }
-
-        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile)); InputStream gzip = new GzipCompressorInputStream(is); TarArchiveInputStream tis = new TarArchiveInputStream(gzip)) {
+    private static void decompressByTGZ(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
+        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile));
+             InputStream gzip = new GzipCompressorInputStream(is);
+             TarArchiveInputStream tis = new TarArchiveInputStream(gzip)) {
             doDecompress(tis, targetDir, condition);
         }
     }
@@ -109,12 +116,10 @@ public final class CompressUtils {
      * @param targetDir
      * @throws IOException
      */
-    public static void decompressByTarBZ(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
-        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))) {
-            throw new RuntimeException(MessageFormat.format("The compress file [{0}] is empty string or not exists!", srcTarFile));
-        }
-
-        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile)); InputStream bzip = new BZip2CompressorInputStream(is); TarArchiveInputStream tis = new TarArchiveInputStream(bzip)) {
+    private static void decompressByTarBZ(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
+        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile));
+             InputStream bzip = new BZip2CompressorInputStream(is);
+             TarArchiveInputStream tis = new TarArchiveInputStream(bzip)) {
             doDecompress(tis, targetDir, condition);
         }
     }
@@ -128,12 +133,9 @@ public final class CompressUtils {
      * @param targetDir
      * @throws IOException
      */
-    public static void decompressByTar(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
-        if (StringUtils.isBlank(srcTarFile) || !Files.exists(Paths.get(srcTarFile))) {
-            throw new RuntimeException(MessageFormat.format("The compress file [{0}] is empty string or not exists!", srcTarFile));
-        }
-
-        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile)); TarArchiveInputStream tis = new TarArchiveInputStream(is)) {
+    private static void decompressByTar(String srcTarFile, String targetDir, Predicate<File> condition) throws IOException {
+        try (InputStream is = Files.newInputStream(Paths.get(srcTarFile));
+             TarArchiveInputStream tis = new TarArchiveInputStream(is)) {
             doDecompress(tis, targetDir, condition);
         }
     }
@@ -157,6 +159,7 @@ public final class CompressUtils {
             File targetFile = new File(targetDir, entry.getName());
             if (entry.isDirectory()) {
                 if (!targetFile.isDirectory() && !targetFile.mkdirs()) {
+                    // 创建目录失败
                     System.out.println("....");
                 }
             } else if (entry.isSymbolicLink()) {
@@ -168,6 +171,7 @@ public final class CompressUtils {
             } else {
                 File parentFile = targetFile.getParentFile();
                 if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
+                    // 创建目录失败
                     System.out.println("....");
                 }
                 System.out.println(entry.getMode() + " === " + parseFilePermissions(entry.getMode()));
@@ -197,6 +201,8 @@ public final class CompressUtils {
 
         permissionsBuilder
                 // 所属者权限
+                // (二进制)读权限：100 000 000， 写权限： 010 000 000， 其它：001 000 000
+                // (八进制)读权限：0400， 写权限：0200， 其它：0100
                 .append(parsePermission(unixMode, 0400, 0200, 0100))
                 // 所属组权限
                 .append(parsePermission(unixMode, 0040, 0020, 0010))
@@ -218,19 +224,19 @@ public final class CompressUtils {
     private static String parsePermission(int unixMode, int read, int write, int other) {
         StringBuilder partBuilder = new StringBuilder();
         if ((unixMode & read) != 0) {
-            partBuilder.append('r');
+            partBuilder.append(R_AUTH);
         } else {
-            partBuilder.append('-');
+            partBuilder.append(NO_AUTH);
         }
         if ((unixMode & write) != 0) {
-            partBuilder.append('w');
+            partBuilder.append(W_AUTH);
         } else {
-            partBuilder.append('-');
+            partBuilder.append(NO_AUTH);
         }
         if ((unixMode & other) != 0) {
-            partBuilder.append('x');
+            partBuilder.append(X_AUTH);
         } else {
-            partBuilder.append('-');
+            partBuilder.append(NO_AUTH);
         }
         return partBuilder.toString();
     }
