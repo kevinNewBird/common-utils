@@ -37,6 +37,8 @@ public final class CompressUtils {
 
     private static final char NO_AUTH = '-';
 
+    private static final String OS_TYPE = System.getProperty("os.name");
+
     private CompressUtils() {
     }
 
@@ -62,6 +64,9 @@ public final class CompressUtils {
         SSHExecutor.uploadDirToRemote(sshConfig, "/root/output/test", "/root");
     }
 
+    private static boolean isWindows() {
+        return StringUtils.containsIgnoreCase(OS_TYPE, "windows");
+    }
 
     public static void decompressAllByTar(String srcTarFile, String targetDir) throws IOException {
         decompressAllByTar(srcTarFile, targetDir, null);
@@ -153,14 +158,14 @@ public final class CompressUtils {
         TarArchiveEntry entry = null;
         while ((entry = tis.getNextEntry()) != null) {
             if (!tis.canReadEntryData(entry)) {
-                System.out.println("No Read Auth:" + entry.getName());
+                System.out.println("No read permission:" + entry.getName());
                 continue;
             }
             File targetFile = new File(targetDir, entry.getName());
             if (entry.isDirectory()) {
                 if (!targetFile.isDirectory() && !targetFile.mkdirs()) {
                     // 创建目录失败
-                    System.out.println("....");
+                    System.out.println("Failed to create the directory" + targetFile.getAbsolutePath());
                 }
             } else if (entry.isSymbolicLink()) {
                 // 先删除已存在的软连接
@@ -172,14 +177,18 @@ public final class CompressUtils {
                 File parentFile = targetFile.getParentFile();
                 if (!parentFile.isDirectory() && !parentFile.mkdirs()) {
                     // 创建目录失败
-                    System.out.println("....");
+                    System.out.println("Failed to create the directory" + targetFile.getAbsolutePath());
                 }
                 System.out.println(entry.getMode() + " === " + parseFilePermissions(entry.getMode()));
                 try (OutputStream os = Files.newOutputStream(targetFile.toPath())) {
                     IOUtils.copy(tis, os);
                 }
-                Files.setPosixFilePermissions(targetFile.toPath()
-                        , PosixFilePermissions.fromString(parseFilePermissions(entry.getMode())));
+
+                if (!isWindows() && Files.exists(targetFile.toPath())) {
+                    Files.setPosixFilePermissions(targetFile.toPath()
+                            , PosixFilePermissions.fromString(parseFilePermissions(entry.getMode())));
+                }
+
                 if (condition != null && condition.test(targetFile)) {
                     decompressAllByTar(targetFile.getAbsolutePath(), targetFile.getParent());
                 }

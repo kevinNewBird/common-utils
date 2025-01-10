@@ -39,7 +39,8 @@ public class SSHPooledObjectFactory extends BaseKeyedPooledObjectFactory<SSHConf
         try {
             SshClient client = ClientBuilder.builder().build();
             // 空闲时间设置为5min,默认为10min。避免阻塞等待时，时间过短，导致连接被强行释放
-            CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ofMillis(5L));
+            CoreModuleProperties.IDLE_TIMEOUT.set(client, Duration.ofMinutes(5L));
+            CoreModuleProperties.CHANNEL_CLOSE_TIMEOUT.set(client, Duration.ofMinutes(10L));
             client.start();
 
             long timeout = config.getTimeout() > 0 ? config.getTimeout() : Long.MAX_VALUE;
