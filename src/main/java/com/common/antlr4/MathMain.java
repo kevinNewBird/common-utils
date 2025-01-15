@@ -1,7 +1,7 @@
 package com.common.antlr4;
 
-//import com.common.antlr4.generated.MathLexer;
-//import com.common.antlr4.generated.MathParser;
+import com.common.antlr4.generated.MathLexer;
+import com.common.antlr4.generated.MathParser;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -16,11 +16,11 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class MathMain {
 
     public static void main(String[] args) {
-//        CodePointCharStream input = CharStreams.fromString("12*2+12\r\n");
-//        MathLexer lexer = new MathLexer(input);
-//        CommonTokenStream tokens = new CommonTokenStream(lexer);
-//        MathParser parser = new MathParser(tokens);
-//        ParseTree tree = parser.prog();// 解析
-//        System.out.println(tree);
+        CodePointCharStream input = CharStreams.fromString("12*2+12\r\n");
+        MathLexer lexer = new MathLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        MathParser parser = new MathParser(tokens);
+        ParseTree tree = parser.prog();// 解析
+        System.out.println(tree.toStringTree(parser));
     }
 }
