@@ -13,6 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mina.version>2.13.2</mina.version>
+        <antlr4.version>4.9.3</antlr4.version>
     </properties>
 
     <dependencies>
@@ -106,10 +107,23 @@
             <version>1.18.24</version>
         </dependency>
 
+        <!--thrift rpc框架依赖-->
         <dependency>
             <groupId>org.apache.thrift</groupId>
             <artifactId>libthrift</artifactId>
             <version>0.21.0</version>
+        </dependency>
+
+        <!--antlr4词法解析器依赖, 必须要引入antlr4-maven-plugin插件-->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>${antlr4.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4</artifactId>
+            <version>${antlr4.version}</version>
         </dependency>
 
         <dependency>
@@ -121,28 +135,92 @@
 
     <build>
         <plugins>
+            <!--打包主程序插件-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-assembly-plugin</artifactId>-->
+<!--                <version>3.3.0</version>-->
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <mainClass>com.common.utils.CompressUtils</mainClass>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
+<!--                    <descriptorRefs>-->
+<!--                        <descriptorRef>jar-with-dependencies</descriptorRef>-->
+<!--                    </descriptorRefs>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>single</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
+
+            <!--1.配置antlr4插件, 完整配置需要在mvn的控制台plugins选择antlr4进行执行
+                 eg.Math.g4所在路径为src/main/resources/antlr4/com/common/antlr4/generated，
+                插件中指定的目录为src/main/resources/antlr4，且指定了打包输出路径为src/main/java
+                那么mvn将会在执行antlr4阶段，将Math.g4的目录位置排除插件中指定的位置，
+                即com/common/antlr4/generated保留下来并创建，同时往其下生成.java类对象
+
+                tip: 推荐使用方式2
+            -->
+<!--            <plugin>-->
+<!--                <groupId>org.antlr</groupId>-->
+<!--                <artifactId>antlr4-maven-plugin</artifactId>-->
+<!--                <version>${antlr4.version}</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>antlr</id>-->
+<!--                        <goals>-->
+<!--                            <goal>antlr4</goal>-->
+<!--                        </goals>-->
+<!--                        <phase>none</phase>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <arguments>-->
+<!--                        &lt;!&ndash; 命令行参数 -package ${package} 定义生成java代码的包名&ndash;&gt;-->
+<!--                        <argument>-package</argument>-->
+<!--                        <argument>com.common.antlr4.generated</argument>-->
+<!--                        &lt;!&ndash; 输出生成的Java源码文件位置, 这里的输出文件夹定义一定要与上面 -package 定义的包名匹配 &ndash;&gt;-->
+<!--                        <argument>-o</argument>-->
+<!--                        <argument>src/main/java</argument>-->
+<!--                    </arguments>-->
+<!--                    &lt;!&ndash;语法文件存放目录&ndash;&gt;-->
+<!--                    <sourceDirectory>${basedir}/src/main/resources/antlr4</sourceDirectory>-->
+<!--                    &lt;!&ndash;是否生成listener&ndash;&gt;-->
+<!--                    <listener>true</listener>-->
+<!--                    &lt;!&ndash;是否生成visitor&ndash;&gt;-->
+<!--                    <visitor>false</visitor>-->
+<!--                    &lt;!&ndash;告警即视作错误，生成失败&ndash;&gt;-->
+<!--                    <treatWarningsAsErrors>false</treatWarningsAsErrors>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
+            <!--2.antlr4简单配置, 默认会以Math.g4所在的层次结构生成类对象
+                eg.Math.g4所在路径为src/main/resources/antlr4/com/common/antlr4/generated，
+                插件中指定的目录为src/main/resources/antlr4，那么mvn将会在编译阶段生成class文件到
+                target/classes/com/common/antlr4/generated下
+            -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.common.utils.CompressUtils</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+                <groupId>org.antlr</groupId>
+                <artifactId>antlr4-maven-plugin</artifactId>
+                <version>${antlr4.version}</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>antlr4</goal>
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!--语法文件存放目录-->
+                    <sourceDirectory>${basedir}/src/main/resources/antlr4</sourceDirectory>
+                </configuration>
             </plugin>
         </plugins>
     </build>
