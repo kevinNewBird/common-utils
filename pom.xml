@@ -107,6 +107,13 @@
             <version>1.18.24</version>
         </dependency>
 
+        <!--thrift rpc框架依赖-->
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.21.0</version>
+        </dependency>
+
         <!--CQ高速缓存队列-->
         <dependency>
             <groupId>net.openhft</groupId>
