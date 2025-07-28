@@ -13,6 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mina.version>2.13.2</mina.version>
+        <cq.version>5.26ea6</cq.version>
     </properties>
 
     <dependencies>
@@ -104,6 +105,13 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
+        </dependency>
+
+        <!--CQ高速缓存队列-->
+        <dependency>
+            <groupId>net.openhft</groupId>
+            <artifactId>chronicle-queue</artifactId>
+            <version>${cq.version}</version>
         </dependency>
 
         <dependency>
