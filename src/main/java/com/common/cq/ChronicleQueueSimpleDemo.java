@@ -9,6 +9,10 @@ import net.openhft.chronicle.wire.UnrecoverableTimeoutException;
 public class ChronicleQueueSimpleDemo {
     public static final String TEMP_CQ_DIR = "cq_temp/";
 
+    /**
+     * desc： 高速缓存队列ChronicleQueue的简单使用
+     * @param args
+     */
     public static void main(String[] args) {
         // 1.创建队列实例
         try (ChronicleQueue queue = SingleChronicleQueueBuilder.single(TEMP_CQ_DIR).build();) {
